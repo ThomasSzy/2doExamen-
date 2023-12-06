@@ -10,6 +10,8 @@ from obstaculos import Obstaculo
 from door import Door
 from debug import *
 from enemy import *
+from time_game import Time
+from sounds import *
 
 # from explosion import Explosion
 
@@ -17,14 +19,11 @@ from enemy import *
 class NivelUno:
     def __init__(self) -> None:
         pygame.init()
+        self.return_to_menu = False
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font("./src/assets/fonts/game_over.ttf", 50)
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Level 1 ")
-        # pygame.display.set_icon(
-        #     pygame.image.load("./src/assets/images//icono.png")
-        # )
-        # agrego al juego un grupo de sprite
         self.all_sprites = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
         self.plataformas = pygame.sprite.Group()
@@ -35,28 +34,27 @@ class NivelUno:
         self.player = pygame.sprite.Group()
         self.player_shoots = pygame.sprite.Group()
 
-        ### ### ### ### ### ### ### ###
+        self.plataformas_door = pygame.sprite.Group()
 
         self.time_concurrido_enemy = 0
         self.time_colision_enemy = 500
-
-        ### ### ### ### ### ### ### ### ###
+        self.level_completed = False
         sprite_sheet_player = SpriteSheet(
             player_image.convert_alpha(),
             5,
             4,
             WIDTH_PLAYER,
             HEIGHT_PLAYER,
-            ["idle", "rigth", "left", "front", "jump"],
+            ["idle", "right", "left", "front", "jump"],
         )
 
         sprite_shoot = SpriteSheet(
             player_shoot.convert_alpha(),
             2,
             2,
-            WIDTH_PLAYER_SHOOT,
-            HEIGHT_PLAYER_SHOOT,
-            ["not_shoot", "shoot"],
+            64,
+            64,
+            ["right", "left"],
         )
 
         sprite_sheet_enemy = SpriteSheet(
@@ -84,7 +82,9 @@ class NivelUno:
             ["left", "right"],
         )
 
-        self.player = PlayerJumper([self.all_sprites, self.player], sprite_sheet_player)
+        self.player = PlayerJumper(
+            [self.all_sprites, self.player], sprite_sheet_player, sprite_shoot
+        )
         self.enemy_1 = EnemyMoove(
             [self.all_sprites, self.enemies],
             sprite_sheet_enemy,
@@ -117,17 +117,14 @@ class NivelUno:
         self.lives_item = Item(15, 250, 3, live_image)
         self.items.add(self.lives_item)
         self.key_door = self.player.key
-        self.door_item = Door(
-            1127,
-            100,
-            0,
-            door_lvl_1_image,3
-        )
+        self.door_item = Door(1127, 100, 0, door_lvl_1_image, 3)
         self.doors.add(self.door_item)
 
         # obstaculos
         self.fire_obstaculo = Obstaculo(480, 780, 0, fire_image)
         self.items.add(self.fire_obstaculo)
+
+        # Tiempo
 
         # Plataforma
 
@@ -194,15 +191,21 @@ class NivelUno:
             platforms_lvl_1_image,
         )
 
-        invisible_platform = PlataformaInvisible(50, 50, 399, 459)
-        self.invisible_platform_2 = PlataformaInvisible(50, 50, 990, 280)
-        self.invisible_platform_3 = PlataformaInvisible(50, 50, 675, 270)
-        self.all_sprites.add(
-            invisible_platform, self.invisible_platform_2, self.invisible_platform_3
+        self.salida_door = PlataformaInvisible(
+            [self.all_sprites, self.plataformas_door], 50, 50, 1100, 107
         )
-        self.plataformas_invisible.add(
-            invisible_platform, self.invisible_platform_2, self.invisible_platform_3
+
+        invisible_platform = PlataformaInvisible(
+            [self.all_sprites, self.plataformas_invisible], 50, 50, 399, 459
         )
+        self.invisible_platform_2 = PlataformaInvisible(
+            [self.all_sprites, self.plataformas_invisible], 50, 50, 990, 280
+        )
+        self.invisible_platform_3 = PlataformaInvisible(
+            [self.all_sprites, self.plataformas_invisible], 50, 50, 675, 270
+        )
+
+        music_level_1()
 
     def detect_shoot(self):
         hits = pygame.sprite.groupcollide(self.enemies, self.player_shoots, False, True)
@@ -211,12 +214,15 @@ class NivelUno:
             if hit == self.enemy_1:
                 self.player.score += 10
                 self.enemy_1.live -= 1
+                herida_dino()
             elif hit == self.enemy_2:
                 self.player.score += 10
                 self.enemy_2.live -= 1
+                herida_dino()
             elif hit == self.enemy_3:
                 self.player.score += 10
                 self.enemy_3.live -= 1
+                herida_dino()
 
             if self.enemy_1.live == 0:
                 self.enemy_1.kill()
@@ -233,8 +239,9 @@ class NivelUno:
             hits = pygame.sprite.spritecollide(self.player, self.enemies, False)
             for hit in hits:
                 self.player.live -= 1
-                if self.player.live == 0:
-                    self.player.kill()
+                mordida()
+                if self.player.live <= 0:
+                    print("lose")
 
                 self.time_concurrido_enemy = current_time_live
 
@@ -249,19 +256,31 @@ class NivelUno:
 
     def run(self):
         self.running = True
+
         while self.running:
+            self.time_game = Time(self, self.player)
+            self.time_game.run()
             self.clock.tick(FPS)
             self.handle_events()
             self.detect_shoot()
             self.draw()
             self.update()
+            self.salida()
+
+            if self.player.live <= 0:
+                self.show_score_screen()
 
         self.close()
+
+    def player_live(self):
+        self.screen.blit(background_lose.convert_alpha(), (0, 0))
 
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == QUIT:
                 self.running = False
+                self.close()
+
             if event.type == KEYDOWN:
                 if event.key == K_SPACE:
                     self.player.jump()
@@ -274,6 +293,12 @@ class NivelUno:
                     )
                     pygame.display.flip()
                     wait_user()
+                if event.key == K_r and self.player.live <= 0:
+                    self.restart_game()
+                    return
+                elif event.key == K_ESCAPE:
+                    self.running = False
+                    self.close()
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
                     self.player.shoot(self)
@@ -289,6 +314,15 @@ class NivelUno:
         self.all_sprites.draw(self.screen)
         self.player.live_player(self.screen)
 
+    def salida(self):
+        plataformas_door = pygame.sprite.spritecollide(
+            self.player, self.plataformas_door, False
+        )
+        for plataforma in plataformas_door:
+            if self.player.rect.bottom >= plataforma.rect.top and self.player.key >= 1:
+                self.level_completed = True
+                self.running = False
+
     def update(self):
         plataformas_player = pygame.sprite.spritecollide(
             self.player, self.plataformas, False
@@ -300,12 +334,7 @@ class NivelUno:
             ):
                 self.player.rect.bottom = plataforma.rect.top
                 self.player.speed_vertical = 0
-
-                ##VER PORQUE LO VUELVE A ENVIAR HACIA ABAJO
-                # ES PORQUE LO IGUALO Y SIEMPRE COMPARA SI ES IGUAL AL RECT.BOTTOM CON EL RECT.TOP
-            # elif self.player.rect.top <= plataforma.rect.bottom:
-            #     self.player.rect.top = plataforma.rect.bottom
-            #     self.player.speed_vertical = 0
+                self.player.can_jump = True
 
         plataforma_invisible = pygame.sprite.spritecollide(
             self.enemy_2, self.plataformas_invisible, False
@@ -318,9 +347,7 @@ class NivelUno:
             ):
                 self.enemy_2.direction = "left"
 
-        # plataforma_invisible = pygame.sprite.spritecollide(
-        #     self.enemy_3, self.plataformas_invisible, False
-        # )
+        # Enemigo doble plataforma invisible
         if (
             self.enemy_3.rect.right >= self.invisible_platform_2.rect.left
             and self.enemy_3.speed >= 0
@@ -329,14 +356,14 @@ class NivelUno:
         elif self.enemy_3.rect.left <= self.invisible_platform_3.rect.right:
             self.enemy_3.direction = "right"
 
-        # Plataforma dino
         self.plataforma_dino(self.enemy_1)
         self.plataforma_dino(self.enemy_2)
         self.plataforma_dino(self.enemy_3)
         self.all_sprites.update()
         self.items.update(self.player)
         self.doors.update(self.player)
-        self.dibujar_texto(f"Score:  {self.player.score}", self.font, WITHE, 1100, 0)
+        self.dibujar_texto(f"Score:  {self.player.score}", self.font, GOLD, 1100, 0)
+        self.time_game.draw(self)
         pygame.display.flip()
 
     def plataforma_dino(self, enemy):
@@ -346,12 +373,47 @@ class NivelUno:
                 enemy.rect.bottom = plataforma.rect.top
                 enemy.speed_vertical = 0
 
-        ###############################################
+    def restart_game(self):
+        self.__init__()
+        self.run()
+
+    def show_score_screen(self):
+        self.screen.blit(background_lose.convert_alpha(), (0, 0))
+        losse()
+        self.dibujar_texto(
+            f"{self.player.score}",
+            pygame.font.Font("./src/assets/fonts/game_over.ttf", 150),
+            WITHE,
+            245,
+            365,
+        )
+        self.dibujar_texto(
+            "Presiona R para reiniciar",
+            self.font,
+            WITHE,
+            300,
+            400,
+        )
+        pygame.display.flip()
+
+        waiting_for_restart = True
+        while waiting_for_restart:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    self.running = False
+                    waiting_for_restart = False
+                elif event.type == KEYDOWN:
+                    if event.key == K_r:
+                        self.restart_game()
+                        waiting_for_restart = False
+                    elif event.key == K_ESCAPE:
+                        self.running = False
+                        waiting_for_restart = False
 
     def close(self):
         pygame.quit()
 
 
-if __name__ == "__main__":
-    game = NivelUno()
-    game.run()
+# if __name__ == "__main__":
+#     game = NivelUno()
+#     game.run()

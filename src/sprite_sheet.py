@@ -13,7 +13,7 @@ class SpriteSheet:
         self.height_sprite = height
         self.keys = keys
 
-    def get_animations(self, scale=1):
+    def get_animations(self, scale):
         self.width = scale * self.width
         self.height = scale * self.height
         self.width_sprite = scale * self.width_sprite

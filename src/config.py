@@ -27,15 +27,20 @@ WIDTH_WARR = 64
 HEIGHT_WARR = 64
 
 # Boss
-WIDTH_BOSS = 50
-HEIGHT_BOSS = 50
+WIDTH_BOSS = 64
+HEIGHT_BOSS = 77
 
 # Gravedad y Colores
 GRAVEDAD = 1
+
 WITHE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
 RED = (255, 0, 0)
+GOLD = (255, 215, 0)
+
+# Granadas
+GRAVEDAD_GRANADA = 0.85
 
 # Items
 WIDTH_COIN = 64
