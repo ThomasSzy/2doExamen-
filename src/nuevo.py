@@ -9,6 +9,74 @@ from nivel_2 import NivelDos
 from nivel_3 import NivelTres
 
 
+# def main_menu():
+#     centro_x = SCREEN.get_width() // 2
+#     button_width = 200
+#     button_heigth = 50
+#     boton_comenzar = pygame.Rect(centro_x - button_width // 2, 400, 200, 50)
+#     boton_options = pygame.Rect(centro_x - button_width // 2, 500, 200, 50)
+#     boton_quit = pygame.Rect(centro_x - button_width // 2, 600, 200, 50)
+#     boton_back = pygame.Rect(centro_x - button_width // 2, 500, 200, 50)
+#     font = pygame.font.SysFont(None, 30)
+#     # musica_intro()
+#     while True:
+#         pygame.mouse.set_visible(True)
+#         run_lvl_1 = True
+
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 exit()
+#             if event.type == pygame.MOUSEBUTTONDOWN:
+#                 if event.button == 1:
+#                     cursor = event.pos
+#                     if boton_comenzar.collidepoint(cursor[0], cursor[1]):
+#                         if run_lvl_1:
+#                             nivel_uno = NivelUno()
+#                             nivel_uno.run()
+#                             run_lvl_1 = False
+
+#                         if nivel_uno.level_completed:
+#                             nivel_dos = NivelDos()
+#                             nivel_dos.run()
+#                             run_lvl_2 = False
+
+#                         if nivel_dos.level_completed:
+#                             nivel_tres = NivelTres()
+#                             nivel_tres.run()
+#                             run_lvl_3 = False
+
+#                     elif boton_options.collidepoint(cursor[0], cursor[1]):
+#                         options()
+#                     elif boton_quit.collidepoint(cursor[0], cursor[1]):
+#                         exit()
+
+#         SCREEN.blit(background_init_image, (0, 0))
+
+#         crear_boton(
+#             SCREEN,
+#             boton_comenzar,
+#             "Comenzar",
+#             WITHE,
+#             BLUE,
+#         )
+#         crear_boton(
+#             SCREEN,
+#             boton_options,
+#             "Opciones",
+#             WITHE,
+#             BLUE,
+#         )
+#         crear_boton(
+#             SCREEN,
+#             boton_quit,
+#             "Salir",
+#             WITHE,
+#             BLUE,
+#         )
+
+#         pygame.display.flip()
+
+
 def main_menu():
     centro_x = SCREEN.get_width() // 2
     button_width = 200
@@ -22,8 +90,6 @@ def main_menu():
     while True:
         pygame.mouse.set_visible(True)
         run_lvl_1 = True
-        run_lvl_2 = False
-        run_lvl_3 = False
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -32,21 +98,7 @@ def main_menu():
                 if event.button == 1:
                     cursor = event.pos
                     if boton_comenzar.collidepoint(cursor[0], cursor[1]):
-                        if run_lvl_1:
-                            nivel_uno = NivelUno()
-                            nivel_uno.run()
-                            run_lvl_1 = False
-
-                        if nivel_uno.level_completed:
-                            nivel_dos = NivelDos()
-                            nivel_dos.run()
-                            run_lvl_2 = False
-
-                        if nivel_dos.level_completed:
-                            nivel_tres = NivelTres()
-                            nivel_tres.run()
-                            run_lvl_3 = False
-
+                        levels()
                     elif boton_options.collidepoint(cursor[0], cursor[1]):
                         options()
                     elif boton_quit.collidepoint(cursor[0], cursor[1]):
@@ -152,3 +204,71 @@ def screen_text_boton(superficie, texto, x, y, font_size=24, color=BLACK):
     render = fuente.render(texto, True, color)
     rect_text = render.get_rect(center=(x, y))
     superficie.blit(render, rect_text)
+
+
+def levels():
+    centro_x = SCREEN.get_width() // 2
+    button_width = 200
+    button_heigth = 50
+    nivel_1 = pygame.Rect(centro_x - button_width // 2, 400, 200, 50)
+    nivel_2 = pygame.Rect(centro_x - button_width // 2, 500, 200, 50)
+    nivel_3 = pygame.Rect(centro_x - button_width // 2, 600, 200, 50)
+    boton_back = pygame.Rect(centro_x - button_width // 2, 500, 200, 50)
+    font = pygame.font.SysFont(None, 30)
+    # musica_intro()
+    while True:
+        pygame.mouse.set_visible(True)
+        run_lvl_1 = True
+        # run_lvl_2 = True
+        # run_lvl_3 = True
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    cursor = event.pos
+                    if nivel_1.collidepoint(cursor[0], cursor[1]):
+                        if run_lvl_1:
+                            nivel_uno = NivelUno()
+                            nivel_uno.run()
+                            run_lvl_1 = False
+                        if nivel_uno.level_completed:
+                            nivel_dos = NivelDos()
+                            nivel_dos.run()
+                            run_lvl_2 = False
+                        if nivel_dos.level_completed:
+                            nivel_tres = NivelTres()
+                            nivel_tres.run()
+                            run_lvl_3 = False
+
+                    elif nivel_2.collidepoint(cursor[0], cursor[1]):
+                        print("No complete Level 3")
+                    elif nivel_3.collidepoint(cursor[0], cursor[1]):
+                        print("No complete Level 2")
+
+        SCREEN.blit(background_init_image, (0, 0))
+
+        crear_boton(
+            SCREEN,
+            nivel_1,
+            "Nivel 1",
+            WITHE,
+            BLUE,
+        )
+        crear_boton(
+            SCREEN,
+            nivel_2,
+            "Nivel 2",
+            WITHE,
+            BLUE,
+        )
+        crear_boton(
+            SCREEN,
+            nivel_3,
+            "Nivel 3",
+            WITHE,
+            BLUE,
+        )
+
+        pygame.display.flip()

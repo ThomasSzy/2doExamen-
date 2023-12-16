@@ -259,6 +259,7 @@ class NivelUno:
 
         while self.running:
             self.time_game = Time(self, self.player)
+            self.score_max()
             self.time_game.run()
             self.clock.tick(FPS)
             self.handle_events()
@@ -372,6 +373,21 @@ class NivelUno:
             if enemy.rect.bottom >= plataforma.rect.top and enemy.speed_vertical > 0:
                 enemy.rect.bottom = plataforma.rect.top
                 enemy.speed_vertical = 0
+
+    def score_max(self):
+        directorio = os.getcwd()
+        path_completo = os.path.join(directorio, "puntuacion_maxima.txt")
+
+        if os.path.exists(path_completo):
+            with open("puntuacion_maxima.txt", "r") as file:
+                puntuacion_maxima = int(file.read())
+
+        else:
+            puntuacion_maxima = 0
+
+        if self.player.score > puntuacion_maxima:
+            with open(path_completo, "w") as file:
+                file.write(str(self.player.score))
 
     def restart_game(self):
         self.__init__()

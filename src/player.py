@@ -33,7 +33,7 @@ class Player(pygame.sprite.Sprite):
         self.mirando = "right"
 
         # 2,5
-        self.speed = 8
+        self.speed = 2.5
         self.last_update = pygame.time.get_ticks()
         self.time_animation = 100
 
@@ -47,7 +47,7 @@ class PlayerJumper(Player):
         groups,
         sprite_sheet: SpriteSheet,
         sprite_sheet_2,
-        ammo=10,
+        ammo=6,
         granates=3,
         live=3,
         ubication=(0, HEIGHT),
@@ -153,7 +153,7 @@ class PlayerJumper(Player):
     def granate(self, game):
         if self.ammo_granates >= 1:
             self.ammo_granates -= 1
-            
+
             self.granates = True
             if self.granates:
                 if "right" in self.mirando and self.current_sprite_2 < len(

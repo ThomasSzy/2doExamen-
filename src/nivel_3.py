@@ -577,6 +577,6 @@ class NivelTres:
         pygame.quit()
 
 
-# if __name__ == "__main__":
-#     game = NivelDos()
-#     game.run()
+if __name__ == "__main__":
+    game = NivelTres()
+    game.run()
